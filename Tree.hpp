@@ -15,7 +15,8 @@ class Tree
 {
 public:
     Tree();
-    void add( const Itemset &itemset, const Tidset & tidset );
+    Tree(const Node & node);
+    void add(const Itemset &itemset, const Tidset & tidset);
     std::weak_ptr < Node > root_node();
     void print_tree() const;
 //    void remove( const Itemset & itemset );

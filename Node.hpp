@@ -14,7 +14,6 @@ class Node
 public:
     Node();
     Node(const Itemset & itemset, const Tidset & tidset);
-    Node(const Itemset & itemset, const Tidset & tidset, Node * parent_ptr);
     Node(const Node & r_node);
 
     Node & operator = ( const Node & r_node );

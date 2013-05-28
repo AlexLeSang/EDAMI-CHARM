@@ -34,6 +34,7 @@ CSet Charm::charm(const Database &database, const unsigned int min_sup)
 
             ++ transaction_counter;
         } );
+
         // Fill the tree
         {
             std::for_each( item_map.cbegin(), item_map.cend(), [&]( ItemMap::const_reference key_value ) {
@@ -66,9 +67,10 @@ void Charm::charm_extend(Tree &p_tree, CSet &c_set, const unsigned int min_sup)
     for ( auto it = root->children().begin(); it != root->children().end(); ++ it ) {
         Node & Xi = (*(*it));
         if ( Xi.is_erased() ) continue;
-        Tree p_i_tree;
+        Tree p_i_tree( Xi );
         Itemset X = Xi.itemset();
         Tidset Y = Xi.tidset();
+        Node test_node;
         // For each Xj
         for ( auto internal_it = it + 1; internal_it != root->children().end(); ++ internal_it ) {
             Node & Xj = (*(*internal_it));
@@ -77,14 +79,22 @@ void Charm::charm_extend(Tree &p_tree, CSet &c_set, const unsigned int min_sup)
             Y = Xi.tidset();
             itemset_union( X, Xj );
             tidset_intersection( Xj, Y );
-            const Node test_node( X, Y );
+            test_node = Node( X, Y );
             charm_property( p_i_tree, p_tree, test_node, Xi, Xj, min_sup );
         }
         if ( ! ( root->children().empty() ) ) {
             charm_extend( p_i_tree, c_set, min_sup );
         }
-        if ( ! is_subsumed( c_set, X, Y ) ) {
-            c_set.insert( CSet::value_type(Y, X) );
+
+        if ( test_node.itemset().empty() ) {
+            if ( ! is_subsumed( c_set, Xi ) ) {
+                c_set.insert( CSet::value_type(Xi.tidset(), Xi.itemset()) );
+            }
+        }
+        else {
+            if ( ! is_subsumed( c_set, test_node ) ) {
+                c_set.insert( CSet::value_type(test_node.tidset(), test_node.itemset()) );
+            }
         }
     }
 }
@@ -127,8 +137,11 @@ void Charm::charm_property(Tree &p_i_tree, Tree &p_tree, const Node &test_node, 
  * \param Y
  * \return
  */
-bool Charm::is_subsumed(const CSet &c_set, const Itemset &X, const Tidset &Y)
+bool Charm::is_subsumed(const CSet &c_set, const Node & node)
 {
+    const Itemset & X = node.itemset();
+    const Tidset & Y = node.tidset();
+
     bool is_subsumed = false;
     const auto range = c_set.equal_range( Y );
     for ( auto it = range.first; it != range.second; ++ it ) {
@@ -179,7 +192,7 @@ void Charm::tidset_intersection(Node &Xj, Tidset &Y)
  */
 void Charm::property_1(Tree &p_i_tree, Tree &p_tree, Node &Xj, Node &Xi, const Node &test_node)
 {
-//    p_tree.remove( Xj.itemset() );
+    //    p_tree.remove( Xj.itemset() );
     Xj.set_erased();
     const auto itemset_to_replace = Xi.itemset();
     p_i_tree.replace( itemset_to_replace, test_node.itemset() );
@@ -210,7 +223,7 @@ void Charm::property_2(Tree &p_tree, Tree &p_i_tree, const Node &test_node, Node
 void Charm::property_3(Tree &p_i_tree, Node &Xj, const Node &test_node)
 {
     Xj.set_erased();
-//    p_tree.remove( Xj.itemset() );
+    //    p_tree.remove( Xj.itemset() );
     p_i_tree.add( test_node.itemset(), test_node.tidset() );
 }
 

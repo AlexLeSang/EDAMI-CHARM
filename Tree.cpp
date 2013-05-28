@@ -11,6 +11,13 @@ Tree::Tree() : _root_node( new Node() )
 {}
 
 /*!
+ * \brief Tree::Tree
+ * \param node
+ */
+Tree::Tree(const Node &node) : _root_node( new Node( node ) )
+{}
+
+/*!
  * \brief Tree::add
  * \param itemset
  * \param tidset

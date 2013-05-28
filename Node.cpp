@@ -26,19 +26,6 @@ Node::Node(const Itemset &itemset, const Tidset &tidset) :
 
 /*!
  * \brief Node::Node
- * \param itemset
- * \param tidset
- * \param parent_ptr
- */
-Node::Node(const Itemset &itemset, const Tidset &tidset, Node * parent_ptr) :
-    _itemset( itemset ),
-    _tidset( tidset ),
-    _parent( parent_ptr ),
-    _is_erased( false )
-{}
-
-/*!
- * \brief Node::Node
  * \param r_node
  */
 Node::Node(const Node &r_node) :
