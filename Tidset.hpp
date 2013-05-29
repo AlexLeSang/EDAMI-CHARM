@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <istream>
+#include <algorithm>
 
 /*!
  * \brief TID

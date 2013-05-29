@@ -29,8 +29,9 @@ int main( int argc, const char * argv[] )
     }
     std::cout << "Input args: \n";
     std::for_each ( argv_vector.cbegin(), argv_vector.cend(), []( const std::string & str ) {
-        std::cout << str << '\n';
+        std::cout << str << ' ';
     } );
+    std::cout << std::endl;
     // Read support
     unsigned int min_sup = 0;
     try {

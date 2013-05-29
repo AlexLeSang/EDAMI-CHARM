@@ -16,12 +16,10 @@ TEMPLATE = app
 QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += main.cpp \
-    Tree.cpp \
     Node.cpp \
     Charm.cpp
 
 HEADERS += \
-    Tree.hpp \
     Typedefs.hpp \
     Node.hpp \
     Charm.hpp \
@@ -34,5 +32,5 @@ HEADERS += \
     Database.hpp
 
 #DEFINES += "TREE_TEST"
-DEFINES += "SIMPLE_TEST"
+#DEFINES += "SIMPLE_TEST"
 QMAKE_CXX = g++-4.7
