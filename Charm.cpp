@@ -53,9 +53,7 @@ CSet Charm::charm(const Database &database, const unsigned int min_sup)
     }
     auto c_set = CSet();
     charm_extend( p, c_set, min_sup );
-#ifdef SIMPLE_TEST
-    std::cerr << "c_set: \n" << c_set << std::endl;
-#endif
+    //    std::cerr << "c_set: \n" << c_set << std::endl;
     return c_set;
 }
 
@@ -70,31 +68,27 @@ void Charm::charm_extend(Node &p_tree, CSet &c_set, const unsigned int min_sup)
     static unsigned int recursion_level = 0;
     ++ recursion_level;
 
-//    std::cerr << "\nrecursion_level = " << recursion_level << std::endl;
-
-//    std::cerr << "p_tree: " << p_tree << std::endl;
-//    std::for_each( p_tree.children().cbegin(), p_tree.children().cend(), []( const std::shared_ptr<Node> & val_ref ) { std::cerr << (*val_ref) << std::endl; } );
 
     for ( auto it = p_tree.children().cbegin(); it != p_tree.children().cend(); ++ it ) {
         Node & current_child = (*(*it));
         if ( current_child.is_erased() ) continue;
-//        std::cerr << "\ncurrent_child = " << current_child << std::endl;
+        //        std::cerr << "\ncurrent_child = " << current_child << std::endl;
         for ( auto int_it = it + 1; int_it != p_tree.children().cend(); ++ int_it ) {
             Node & internal_child = (*(*int_it));
             if ( internal_child.is_erased() ) continue;
-//            std::cerr << "\n  internal_child = " << internal_child << std::endl;
+            //            std::cerr << "\n  internal_child = " << internal_child << std::endl;
             Itemset X = current_child.itemset();
             Tidset Y = current_child.tidset();
 
             itemset_union( X, internal_child );
             tidset_intersection( internal_child, Y );
             Node test_node( X, Y );
-//            std::cerr << "  test_node = " << test_node << std::endl;
+            //            std::cerr << "  test_node = " << test_node << std::endl;
 
             if ( test_node.sup() >= min_sup ) {
-                if ( std::equal( internal_child.tidset().cbegin(), internal_child.tidset().cend(), current_child.tidset().cbegin() ) ) {
-//                    std::cerr << "   property_1" << std::endl;
-//                    std::cerr << "Erase " << internal_child << std::endl;
+                if ( internal_child.tidset() == current_child.tidset() ) {
+                    //                    std::cerr << "   property_1" << std::endl;
+                    //                    std::cerr << "Erase " << internal_child << std::endl;
                     internal_child.set_erased();
                     const Itemset replased_itemset = current_child.itemset();
                     replace_item( current_child, replased_itemset, test_node.itemset() );
@@ -103,21 +97,21 @@ void Charm::charm_extend(Node &p_tree, CSet &c_set, const unsigned int min_sup)
                 }
                 else {
                     if ( std::includes( internal_child.tidset().cbegin(), internal_child.tidset().cend(), current_child.tidset().cbegin(), current_child.tidset().cend() ) ) {
-//                        std::cerr << "   property_2" << std::endl;
+                        //                        std::cerr << "   property_2" << std::endl;
                         const Itemset replased_itemset = current_child.itemset();
                         replace_item( current_child, replased_itemset, test_node.itemset() );
                         //                        property_2( p_tree, p_i_tree, test_node, Xi );
                     }
                     else {
                         if ( std::includes( current_child.tidset().cbegin(), current_child.tidset().cend(), internal_child.tidset().cbegin(), internal_child.tidset().cend() ) ) {
-//                            std::cerr << "   property_3" << std::endl;
-//                            std::cerr << "Erase " << internal_child << std::endl;
+                            //                            std::cerr << "   property_3" << std::endl;
+                            //                            std::cerr << "Erase " << internal_child << std::endl;
                             internal_child.set_erased();
                             current_child.add_child( test_node );
                             //                            property_3( p_i_tree, Xj, test_node );
                         }
                         else {
-//                            std::cerr << "   property_4" << std::endl;
+                            //                            std::cerr << "   property_4" << std::endl;
                             current_child.add_child( test_node );
                             //                            property_4( p_i_tree, test_node );
                         }
@@ -125,7 +119,7 @@ void Charm::charm_extend(Node &p_tree, CSet &c_set, const unsigned int min_sup)
                 }
             }
             else{
-//                std::cerr << "   rejected" << std::endl;
+                //                std::cerr << "   rejected" << std::endl;
             }
 
         }
@@ -135,7 +129,8 @@ void Charm::charm_extend(Node &p_tree, CSet &c_set, const unsigned int min_sup)
 
     if ( ! p_tree.itemset().empty() ) {
         if ( ! is_subsumed( c_set, p_tree ) ) {
-//            std::cerr << "\nInsert: " << p_tree << std::endl;
+            //            std::cerr << "\nInsert: " << p_tree << std::endl;
+//            std::cout << "Inserted itemset: " << p_tree.itemset() << std::endl;
             c_set.insert( CSet::value_type( p_tree.tidset(), p_tree.itemset() ) );
         }
     }
@@ -158,9 +153,10 @@ bool Charm::is_subsumed(const CSet &c_set, const Node & node)
     const auto range = c_set.equal_range( Y );
     for ( auto it = range.first; it != range.second; ++ it ) {
         const Tidset & tidset = (*it).first;
-        if ( tidset.size() == Y.size() ) {
+        if ( tidset.size() == Y.size() ) { // Check support
             const Itemset & C = (*it).second;
             if ( std::includes( C.cbegin(), C.cend(), X.cbegin(), X.cend() ) ) {
+//                std::cout << "Itemset: " << X << " is subsumed by: " << C << std::endl;
                 is_subsumed = true;
                 break;
             }
@@ -179,7 +175,7 @@ void Charm::itemset_union(Itemset &X, Node &Xj)
 {
     Itemset union_itemset( X.size() + Xj.itemset().size() );
     auto it_union = std::set_union( X.cbegin(), X.cend(), Xj.itemset().cbegin(), Xj.itemset().cend(), union_itemset.begin() );
-//    union_itemset.resize( it_union - union_itemset.begin() );
+    //    union_itemset.resize( it_union - union_itemset.begin() );
     union_itemset.resize( std::distance(union_itemset.begin(), it_union) );
     X = union_itemset;
 }
@@ -189,17 +185,19 @@ void Charm::itemset_union(Itemset &X, Node &Xj)
  * \param Xj
  * \param Y
  */
-void Charm::tidset_intersection(Node &Xj, Tidset &Y)
+void Charm::tidset_intersection(const Node &Xj, Tidset &Y)
 {
-    const auto it = std::set_intersection( Y.cbegin(), Y.cend(), Xj.tidset().cbegin(), Xj.tidset().cend(), Y.begin() );
-    Y.resize( it - Y.begin() );
+    Tidset resutl_tidset( Xj.tidset().size() + Y.size() );
+    const auto it = std::set_intersection( Y.cbegin(), Y.cend(), Xj.tidset().cbegin(), Xj.tidset().cend(), resutl_tidset.begin() );
+    resutl_tidset.resize( std::distance( resutl_tidset.begin(), it ) );
+    Y = resutl_tidset;
 }
 
 void Charm::replace_item(Node &node_ref, const Itemset &itemset, const Itemset &itemset_to)
 {
-//    std::cerr << "Replace " << itemset << " to " << itemset_to << " in " << node_ref << std::endl;
     assert( itemset.size() != 0 );
     assert( itemset_to.size() != 0 );
+//    std::cout << "Replace: " << itemset << " to " << itemset_to << std::endl;
     if ( node_ref.itemset().size() >= itemset.size() ) {
         if ( ! std::includes( node_ref.itemset().cbegin(), node_ref.itemset().cend(), itemset_to.cbegin(), itemset_to.cend() ) ) {
             // Look for all items

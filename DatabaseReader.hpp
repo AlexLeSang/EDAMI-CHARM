@@ -41,7 +41,7 @@ public:
 //    */
 #else
     // Chess
-//    /*
+    /*
     void operator ()(std::ifstream & data_stream, Database & database) const
     {
         std::string s;
@@ -62,7 +62,36 @@ public:
             }
         }
     }
-//    */
+    */
+    void operator ()(std::ifstream & data_stream, Database & database) const
+    {
+        const char delim = ';';
+        std::string s;
+        Itemset itemset;
+        Item item;
+        std::string item_stirng;
+        while ( ! data_stream.eof() ) {
+            std::getline( data_stream, s );
+            if ( !s.empty() ) {
+                std::istringstream stringstream( s );
+                itemset.clear();
+                item_stirng.clear();
+                bool first_skipped = false;
+                while ( std::getline( stringstream, item_stirng, delim ) ) {
+                    if ( ! first_skipped ) {
+                        first_skipped = true;
+                        continue;
+                    }
+                    std::istringstream buff( item_stirng );
+                    buff >> item;
+                    itemset.push_back( item );
+                }
+                database.push_back( itemset );
+            }
+        }
+    }
+
+
 #endif
     /*!
      * \brief read_database

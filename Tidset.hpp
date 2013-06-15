@@ -21,11 +21,16 @@ typedef std::vector < TID > Tidset;
 class tidset_hash {
 public:
     /*!
+     * \brief tidset_hash
+     */
+    tidset_hash() {}
+
+    /*!
      * \brief operator ()
      * \param tidset
      * \return
      */
-    unsigned int operator ()( const Tidset & tidset ) const
+    int operator ()( const Tidset & tidset ) const
     {
         return std::accumulate( tidset.cbegin(), tidset.cend(), 0 );
     }
@@ -37,6 +42,7 @@ public:
  * \param tidset
  * \return
  */
+/*
 inline std::ostream & operator << ( std::ostream & os, const Tidset & tidset )
 {
     unsigned index = tidset.size();
@@ -48,5 +54,6 @@ inline std::ostream & operator << ( std::ostream & os, const Tidset & tidset )
     }
     return os;
 }
+*/
 
 #endif // TIDSET_HPP
